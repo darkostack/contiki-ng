@@ -53,7 +53,6 @@ void ctimer_set(struct ctimer *ct, clock_time_t interval, void (*cb)(void *), vo
 
 void ctimer_reset(struct ctimer *ct)
 {
-    ztimer_remove(ZTIMER_USEC, &ct->etimer.super);
     _ctimer_set(ct, ct->etimer.timer.interval, ct->cb, ct->arg);
 }
 
