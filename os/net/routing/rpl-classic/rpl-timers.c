@@ -186,7 +186,7 @@ handle_dio_timer(void *ptr)
              instance->dio_counter, instance->dio_redundancy);
     }
     instance->dio_send = 0;
-    LOG_DBG("Scheduling DIO timer %" PRIu32" ticks in future (sent)\n",
+    LOG_DBG("Scheduling DIO timer %" PRIu32 " ticks in future (sent)\n",
            instance->dio_next_delay);
     ctimer_set(&instance->dio_timer, instance->dio_next_delay, handle_dio_timer, instance);
   } else {
