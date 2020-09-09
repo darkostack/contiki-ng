@@ -34,7 +34,7 @@
 
 #include <string.h>
 
-PROCESS(udp_socket_process, "UDP socket process");
+PROCESS(udp_socket_process, "UDP socket process", VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE);
 
 static uint8_t buf[UIP_BUFSIZE];
 

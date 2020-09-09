@@ -295,6 +295,7 @@ schedule_transmission(struct neighbor_queue *n)
 static void
 free_packet(struct neighbor_queue *n, struct packet_queue *p, int status)
 {
+  (void) status;
   if(p != NULL) {
     /* Remove packet from queue and deallocate */
     list_remove(n->packet_queue, p);

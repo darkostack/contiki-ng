@@ -434,7 +434,7 @@ copy_frags2uip(int context)
   for(i = 0; i < SICSLOWPAN_FRAGMENT_BUFFERS; i++) {
     /* And also copy all matching fragments */
     if(frag_buf[i].len > 0 && frag_buf[i].index == context) {
-      if((frag_buf[i].offset << 3) + frag_buf[i].len > sizeof(uip_buf)) {
+      if((frag_buf[i].offset << 3) + frag_buf[i].len > (int)sizeof(uip_buf)) {
         LOG_WARN("input: invalid fragment offset\n");
         clear_fragments(context);
         return false;
@@ -466,6 +466,7 @@ netstack_sniffer_add(struct netstack_sniffer *s)
 void
 netstack_sniffer_remove(struct netstack_sniffer *s)
 {
+  (void) s;
   callback = NULL;
 }
 
@@ -1267,7 +1268,7 @@ uncompress_hdr_iphc(uint8_t *buf, uint16_t ip_len)
     exthdr->len = (2 + len) / 8 - 1;
     exthdr->next = next;
     last_nextheader = &exthdr->next;
-    if(ip_len == 0 && (uint8_t *)exthdr - uip_buf + 2 + len > sizeof(uip_buf)) {
+    if(ip_len == 0 && (uint8_t *)exthdr - uip_buf + 2 + len > (int)sizeof(uip_buf)) {
       LOG_DBG("uncompression: ext header points beyond uip buffer boundary\n");
       return;
     }
@@ -1459,6 +1460,7 @@ compress_hdr_ipv6(linkaddr_t *link_destaddr)
 static void
 packet_sent(void *ptr, int status, int transmissions)
 {
+  (void) ptr;
   const linkaddr_t *dest;
 
   if(callback != NULL) {
@@ -1966,7 +1968,7 @@ input(void)
   {
     int req_size = uncomp_hdr_len + (uint16_t)(frag_offset << 3)
         + packetbuf_payload_len;
-    if(req_size > sizeof(uip_buf)) {
+    if(req_size > (int)sizeof(uip_buf)) {
 #if SICSLOWPAN_CONF_FRAG
       LOG_ERR(
           "input: packet and fragment context %u dropped, minimum required IP_BUF size: %d+%d+%d=%d (current size: %u)\n",

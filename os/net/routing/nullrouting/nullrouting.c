@@ -50,6 +50,8 @@ init(void)
 static void
 root_set_prefix(uip_ipaddr_t *prefix, uip_ipaddr_t *iid)
 {
+  (void) prefix;
+  (void) iid;
 }
 /*---------------------------------------------------------------------------*/
 static int
@@ -67,12 +69,15 @@ node_is_root(void)
 static int
 get_root_ipaddr(uip_ipaddr_t *ipaddr)
 {
+  (void) ipaddr;
   return 0;
 }
 /*---------------------------------------------------------------------------*/
 static int
 get_sr_node_ipaddr(uip_ipaddr_t *addr, const uip_sr_node_t *node)
 {
+  (void) addr;
+  (void) node;
   return 0;
 }
 /*---------------------------------------------------------------------------*/
@@ -96,11 +101,13 @@ node_is_reachable(void)
 static void
 global_repair(const char *str)
 {
+  (void) str;
 }
 /*---------------------------------------------------------------------------*/
 static void
 local_repair(const char *str)
 {
+  (void) str;
 }
 /*---------------------------------------------------------------------------*/
 static bool
@@ -122,6 +129,8 @@ ext_header_update(void)
 static int
 ext_header_hbh_update(uint8_t *ext_buf, int opt_offset)
 {
+  (void) ext_buf;
+  (void) opt_offset;
   return 1;
 }
 /*---------------------------------------------------------------------------*/
@@ -134,22 +143,28 @@ ext_header_srh_update(void)
 static int
 ext_header_srh_get_next_hop(uip_ipaddr_t *ipaddr)
 {
+  (void) ipaddr;
   return 0;
 }
 /*---------------------------------------------------------------------------*/
 static void
 link_callback(const linkaddr_t *addr, int status, int numtx)
 {
+  (void) addr;
+  (void) status;
+  (void) numtx;
 }
 /*---------------------------------------------------------------------------*/
 static void
 neighbor_state_changed(uip_ds6_nbr_t *nbr)
 {
+  (void) nbr;
 }
 /*---------------------------------------------------------------------------*/
 static void
 drop_route(uip_ds6_route_t *route)
 {
+  (void) route;
 }
 /*---------------------------------------------------------------------------*/
 static uint8_t

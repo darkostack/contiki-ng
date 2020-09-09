@@ -46,7 +46,7 @@ static void relisten(struct tcp_socket *s);
 
 LIST(socketlist);
 /*---------------------------------------------------------------------------*/
-PROCESS(tcp_socket_process, "TCP socket process");
+PROCESS(tcp_socket_process, "TCP socket process", VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE);
 /*---------------------------------------------------------------------------*/
 static void
 call_event(struct tcp_socket *s, tcp_socket_event_t event)

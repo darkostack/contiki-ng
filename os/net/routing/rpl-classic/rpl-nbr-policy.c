@@ -173,7 +173,7 @@ update_nbr(void)
 const linkaddr_t *
 find_removable_dis(uip_ipaddr_t *from)
 {
-
+  (void) from;
   update_nbr();
   if(num_free > 0) {
     /* there are free entries (e.g. unsused by RPL and ND6) but since it is
@@ -190,6 +190,7 @@ find_removable_dis(uip_ipaddr_t *from)
 const linkaddr_t *
 find_removable_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
 {
+  (void) from;
   rpl_instance_t *instance;
 
   update_nbr();
@@ -217,6 +218,7 @@ find_removable_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
 const linkaddr_t *
 find_removable_dao(uip_ipaddr_t *from, rpl_instance_t *instance)
 {
+  (void) from;
   int max = MAX_CHILDREN;
   update_nbr();
 

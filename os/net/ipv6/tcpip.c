@@ -130,7 +130,7 @@ tcpip_output(const uip_lladdr_t *a)
   }
 }
 
-PROCESS(tcpip_process, "TCP/IP stack");
+PROCESS(tcpip_process, "TCP/IP stack", VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE);
 
 /*---------------------------------------------------------------------------*/
 #if UIP_TCP
@@ -487,6 +487,8 @@ annotate_transmission(const uip_ipaddr_t *nexthop)
   printf("#L %u 1; red\n", nexthop->u8[sizeof(uip_ipaddr_t) - 1]);
   annotate_last = nexthop->u8[sizeof(uip_ipaddr_t) - 1];
   annotate_has_last = 1;
+#else
+  (void) nexthop;
 #endif /* TCPIP_CONF_ANNOTATE_TRANSMISSIONS */
 }
 /*---------------------------------------------------------------------------*/
@@ -588,6 +590,8 @@ send_queued(uip_ds6_nbr_t *nbr)
     uip_packetqueue_free(&nbr->packethandle);
     tcpip_output(uip_ds6_nbr_get_ll(nbr));
   }
+#else
+  (void) nbr;
 #endif /*UIP_CONF_IPV6_QUEUE_PKT*/
 }
 /*---------------------------------------------------------------------------*/
@@ -815,9 +819,9 @@ PROCESS_THREAD(tcpip_process, ev, data)
   s.p = PROCESS_CURRENT();
 #endif
 
-  tcpip_event = process_alloc_event();
+  tcpip_event = process_alloc_event(PROCESS_EVENT_PRIO_MEDIUM);
 #if UIP_CONF_ICMP6
-  tcpip_icmp6_event = process_alloc_event();
+  tcpip_icmp6_event = process_alloc_event(PROCESS_EVENT_PRIO_MEDIUM);
 #endif /* UIP_CONF_ICMP6 */
   etimer_set(&periodic, CLOCK_SECOND / 2);
 

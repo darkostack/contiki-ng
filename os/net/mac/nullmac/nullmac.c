@@ -48,6 +48,8 @@
 static void
 send_packet(mac_callback_t sent, void *ptr)
 {
+    (void) sent;
+    (void) ptr;
 }
 /*---------------------------------------------------------------------------*/
 static void

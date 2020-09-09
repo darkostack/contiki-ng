@@ -256,6 +256,8 @@ rpl_add_route(rpl_dag_t *dag, uip_ipaddr_t *prefix, int prefix_len,
 void
 rpl_link_callback(const linkaddr_t *addr, int status, int numtx)
 {
+  (void) status;
+  (void) numtx;
   uip_ipaddr_t ipaddr;
   rpl_parent_t *parent;
   rpl_instance_t *instance;
@@ -377,6 +379,7 @@ get_sr_node_ipaddr(uip_ipaddr_t *addr, const uip_sr_node_t *node)
 static void
 global_repair(const char *str)
 {
+  (void) str;
   rpl_dag_t *dag = rpl_get_any_dag();
   if(dag != NULL && dag->instance != NULL) {
     rpl_repair_root(dag->instance->instance_id);
@@ -386,6 +389,7 @@ global_repair(const char *str)
 static void
 local_repair(const char *str)
 {
+  (void) str;
   rpl_dag_t *dag = rpl_get_any_dag();
   if(dag != NULL) {
     rpl_local_repair(dag->instance);

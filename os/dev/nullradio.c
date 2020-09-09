@@ -15,12 +15,15 @@ init(void)
 static int
 prepare(const void *payload, unsigned short payload_len)
 {
+  (void) payload;
+  (void) payload_len;
   return 1;
 }
 /*---------------------------------------------------------------------------*/
 static int
 transmit(unsigned short transmit_len)
 {
+  (void) transmit_len;
   return RADIO_TX_OK;
 }
 /*---------------------------------------------------------------------------*/
@@ -34,6 +37,8 @@ send(const void *payload, unsigned short payload_len)
 static int
 radio_read(void *buf, unsigned short buf_len)
 {
+  (void) buf;
+  (void) buf_len;
   return 0;
 }
 /*---------------------------------------------------------------------------*/
@@ -86,18 +91,26 @@ get_value(radio_param_t param, radio_value_t *value)
 static radio_result_t
 set_value(radio_param_t param, radio_value_t value)
 {
+  (void) param;
+  (void) value;
   return RADIO_RESULT_NOT_SUPPORTED;
 }
 /*---------------------------------------------------------------------------*/
 static radio_result_t
 get_object(radio_param_t param, void *dest, size_t size)
 {
+  (void) param;
+  (void) dest;
+  (void) size;
   return RADIO_RESULT_NOT_SUPPORTED;
 }
 /*---------------------------------------------------------------------------*/
 static radio_result_t
 set_object(radio_param_t param, const void *src, size_t size)
 {
+  (void) param;
+  (void) src;
+  (void) size;
   return RADIO_RESULT_NOT_SUPPORTED;
 }
 /*---------------------------------------------------------------------------*/

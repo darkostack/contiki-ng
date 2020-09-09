@@ -82,6 +82,7 @@ static uint8_t dio_send_ok;
 static void
 handle_periodic_timer(void *ptr)
 {
+  (void) ptr;
   rpl_dag_t *dag = rpl_get_any_dag();
 
   rpl_purge_dags();
@@ -381,6 +382,7 @@ rpl_schedule_unicast_dio_immediately(rpl_instance_t *instance)
 clock_time_t
 get_probing_delay(rpl_dag_t *dag)
 {
+  (void) dag;
   return ((RPL_PROBING_INTERVAL) / 2) + random_rand() % (RPL_PROBING_INTERVAL);
 }
 /*---------------------------------------------------------------------------*/

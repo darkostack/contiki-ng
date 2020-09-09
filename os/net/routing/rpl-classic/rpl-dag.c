@@ -591,6 +591,7 @@ rpl_alloc_instance(uint8_t instance_id)
 rpl_dag_t *
 rpl_alloc_dag(uint8_t instance_id, uip_ipaddr_t *dag_id)
 {
+  (void) dag_id;
   rpl_dag_t *dag, *end;
   rpl_instance_t *instance;
 
@@ -741,6 +742,7 @@ rpl_find_parent(rpl_dag_t *dag, uip_ipaddr_t *addr)
 static rpl_dag_t *
 find_parent_dag(rpl_instance_t *instance, uip_ipaddr_t *addr)
 {
+  (void) instance;
   rpl_parent_t *p = find_parent_any_dag_any_instance(addr);
   if(p != NULL) {
     return p->dag;

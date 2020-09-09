@@ -99,6 +99,7 @@ to the threshold of 96 in the non-squared case) */
 static void
 reset(rpl_dag_t *dag)
 {
+  (void) dag;
   LOG_INFO("Reset MRHOF\n");
 }
 /*---------------------------------------------------------------------------*/

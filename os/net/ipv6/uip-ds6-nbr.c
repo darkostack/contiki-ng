@@ -177,6 +177,7 @@ uip_ds6_nbr_add(const uip_ipaddr_t *ipaddr, const uip_lladdr_t *lladdr,
     add_uip_ds6_nbr_to_nbr_entry(nbr, nbr_entry);
   }
 #else
+  (void) isrouter;
   nbr = nbr_table_add_lladdr(ds6_neighbors, (linkaddr_t*)lladdr, reason, data);
 #endif /* UIP_DS6_NBR_MULTI_IPV6_ADDRS */
 
@@ -573,6 +574,9 @@ uip_ds6_link_callback(int status, int numtx)
     update_nbr_reachable_state_by_ack(nbr, dest);
 #endif /* UIP_DS6_NBR_MULTI_IPV6_ADDRS */
   }
+#else
+  (void) status;
+  (void) numtx;
 #endif /* UIP_DS6_LL_NUD */
 }
 #if UIP_ND6_SEND_NS

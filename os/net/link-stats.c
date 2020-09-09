@@ -276,6 +276,7 @@ print_and_update_counters(void)
 static void
 periodic(void *ptr)
 {
+  (void) ptr;
   /* Age (by halving) freshness counter of all neighbors */
   struct link_stats *stats;
   ctimer_reset(&periodic_timer);

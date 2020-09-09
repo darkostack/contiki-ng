@@ -54,7 +54,7 @@
 #include "net/routing/rpl-classic/rpl-private.h"
 #include "net/packetbuf.h"
 #include "net/ipv6/multicast/uip-mcast6.h"
-#include "random.h"
+#include "lib/random.h"
 
 #include "sys/log.h"
 
@@ -1382,6 +1382,11 @@ dao_ack_output(rpl_instance_t *instance, uip_ipaddr_t *dest, uint8_t sequence,
   buffer[3] = status;
 
   uip_icmp6_send(dest, ICMP6_RPL, RPL_CODE_DAO_ACK, 4);
+#else
+  (void) instance;
+  (void) dest;
+  (void) sequence;
+  (void) status;
 #endif /* RPL_WITH_DAO_ACK */
 }
 /*---------------------------------------------------------------------------*/

@@ -201,7 +201,7 @@ uiplib_ipaddr_snprint(char *buf, size_t size, const uip_ipaddr_t *addr)
       if(a == 0 && f >= 0) {
         if(f++ == 0) {
           n += snprintf(buf+n, size-n, "::");
-          if(n >= size) {
+          if(n >= (int)size) {
             return n;
           }
         }
@@ -210,12 +210,12 @@ uiplib_ipaddr_snprint(char *buf, size_t size, const uip_ipaddr_t *addr)
           f = -1;
         } else if(i > 0) {
           n += snprintf(buf+n, size-n, ":");
-          if(n >= size) {
+          if(n >= (int)size) {
             return n;
           }
         }
         n += snprintf(buf+n, size-n, "%x", a);
-        if(n >= size) {
+        if(n >= (int)size) {
           return n;
         }
       }

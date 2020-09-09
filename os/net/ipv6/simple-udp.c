@@ -48,7 +48,7 @@
 #include <string.h>
 
 
-PROCESS(simple_udp_process, "Simple UDP process");
+PROCESS(simple_udp_process, "Simple UDP process", VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE);
 static uint8_t started = 0;
 static uint8_t databuffer[UIP_BUFSIZE];
 
