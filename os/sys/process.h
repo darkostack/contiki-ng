@@ -11,10 +11,6 @@
 extern "C" {
 #endif
 
-#ifndef PROCESS_MAX_EVENTS
-#define PROCESS_MAX_EVENTS KERNEL_MAXTHREADS
-#endif
-
 #define PROCESS_NONE NULL
 
 #define PT_WAITING 0
@@ -22,16 +18,8 @@ extern "C" {
 #define PT_EXITED  2
 #define PT_ENDED   3
 
-typedef unsigned char process_event_t; /* event id */
+typedef unsigned char process_event_t;
 typedef void *process_data_t;
-
-typedef enum
-{
-    PROCESS_EVENT_PRIO_HIGH,
-    PROCESS_EVENT_PRIO_MEDIUM,
-    PROCESS_EVENT_PRIO_LOW,
-    PROCESS_EVENT_PRIO_NUMOF
-} process_event_prio_t;
 
 #define PROCESS_EVENT_NONE 0
 #define PROCESS_EVENT_INIT 1
@@ -46,16 +34,17 @@ typedef enum
 
 #define PROCESS_EVENT_LAST 10
 
+#define PROCESS_MAX_EVENTS 32
+
 struct process
 {
     unsigned short lc;
     kernel_pid_t pid;
-    mutex_t mutex;
-    process_event_t event;
-    process_data_t data;
+    event_queue_t event_queue;
     char *stack;
     size_t stack_size;
     const char *process_name;
+    thread_t *thread;
     thread_handler_func_t thread_handler;
     void *instance;
 };
@@ -63,11 +52,9 @@ struct process
 typedef struct
 {
     event_t super;
-    struct process *process;
-    process_event_prio_t priority;
-    unsigned char event_id;
-    void *data;
-} process_custom_event_t;
+    process_event_t id;
+    process_data_t data;
+} custom_event_t;
 
 #define PROCESS(name, strname, size) \
     static char process_stack_##name[size]; \
@@ -87,34 +74,27 @@ typedef struct
 #define PROCESS_THREAD(name, ev, data) \
     void *process_handler_##name(void *arg) \
     { \
-        process_event_t _event = PROCESS_EVENT_INIT; \
-        process_data_t _data = (process_data_t *)arg; \
         struct process *p = &name; \
-        unsigned state = process_func_##name(p, _event, _data); \
+        p->thread = thread_get_from_scheduler(p->instance, p->pid); \
+        event_queue_init(p->instance, &p->event_queue); \
+        process_current = p; \
+        unsigned state = process_func_##name(p, PROCESS_EVENT_INIT, (process_data_t *)arg); \
         while (state != PT_ENDED) { \
             if (state == PT_WAITING || state == PT_YIELDED) { \
-                mutex_lock(&p->mutex); \
-                _event = p->event; \
-                _data = p->data; \
-                state = process_func_##name(p, _event, _data); \
+                custom_event_t *event = (custom_event_t *)event_wait(&p->event_queue); \
+                process_current = p; \
+                state = process_func_##name(p, event->id, event->data); \
+                event_release((event_t *)event); \
             } \
         } \
+        process_current = NULL; \
         thread_exit(p->instance); \
         return NULL; \
     } \
     static unsigned process_func_##name(struct process *p, process_event_t ev, process_data_t data)
 
 #define PROCESS_BEGIN() \
-    do { \
-        if (ev == PROCESS_EVENT_INIT) \
-        { \
-            p->event = ev; \
-            p->data = data; \
-            mutex_init(p->instance, &p->mutex); \
-            if (p->mutex.queue.next == NULL) mutex_lock(&p->mutex); \
-        } \
-    } while(0); \
-    { char PT_YIELD_FLAG = 1; if (PT_YIELD_FLAG) {;} process_current = p;  switch(p->lc) { case 0:
+    { char PT_YIELD_FLAG = 1; if (PT_YIELD_FLAG) { (void)data; } switch(p->lc) { case 0:
 
 #define PROCESS_YIELD() \
     do { \
@@ -134,7 +114,7 @@ typedef struct
         } \
     } while (0)
 
-#define PROCESS_END()  } PT_YIELD_FLAG = 0; process_current = NULL; return PT_ENDED; } \
+#define PROCESS_END()  } PT_YIELD_FLAG = 0; return PT_ENDED; } \
 
 #define PROCESS_WAIT_EVENT() PROCESS_YIELD()
 
@@ -156,9 +136,8 @@ int process_post(struct process *p, process_event_t event, process_data_t data);
 
 void process_post_synch(struct process *p, process_event_t event, process_data_t data);
 
-process_event_t process_alloc_event(process_event_prio_t prio);
+process_event_t process_alloc_event(void);
 
-extern process_custom_event_t _process_events[KERNEL_MAXTHREADS];
 extern void *process_instance;
 extern struct process *process_current;
 

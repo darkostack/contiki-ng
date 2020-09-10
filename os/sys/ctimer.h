@@ -10,24 +10,27 @@ extern "C" {
 
 struct ctimer
 {
+    struct ctimer *next;
     struct etimer etimer;
     struct process *p;
-    void (*cb)(void *);
-    void *arg;
+    void (*f)(void *);
+    void *ptr;
 };
 
+void ctimer_reset(struct ctimer *c);
+
+void ctimer_restart(struct ctimer *c);
+
+void ctimer_set(struct ctimer *c, clock_time_t t, void (*f)(void *), void *ptr);
+
+void ctimer_set_with_process(struct ctimer *c, clock_time_t t,
+		                     void (*f)(void *), void *ptr, struct process *p);
+
+void ctimer_stop(struct ctimer *c);
+
+int ctimer_expired(struct ctimer *c);
+
 void ctimer_init(void);
-
-void ctimer_set(struct ctimer *ct, clock_time_t interval, void (*cb)(void *), void *arg);
-
-void ctimer_reset(struct ctimer *ct);
-
-void ctimer_set_with_process(struct ctimer *ct, clock_time_t interval,
-                             void (*cb)(void *), void *arg, struct process *p);
-
-void ctimer_stop(struct ctimer *ct);
-
-int ctimer_expired(struct ctimer *ct);
 
 #ifdef __cplusplus
 }

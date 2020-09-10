@@ -819,7 +819,7 @@ PROCESS_THREAD(tcpip_process, ev, data)
   s.p = PROCESS_CURRENT();
 #endif
 
-  tcpip_event = process_alloc_event(PROCESS_EVENT_PRIO_MEDIUM);
+  tcpip_event = process_alloc_event();
 #if UIP_CONF_ICMP6
   tcpip_icmp6_event = process_alloc_event(PROCESS_EVENT_PRIO_MEDIUM);
 #endif /* UIP_CONF_ICMP6 */

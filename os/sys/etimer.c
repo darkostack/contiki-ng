@@ -3,7 +3,7 @@
 static void _etimer_callback(void *arg)
 {
     struct etimer *et = (struct etimer *)arg;
-    process_post(et->p, PROCESS_EVENT_TIMER, NULL);
+    process_post(et->p, PROCESS_EVENT_TIMER, et);
 }
 
 static void _etimer_set(struct etimer *et, clock_time_t interval)
@@ -22,13 +22,11 @@ void etimer_set(struct etimer *et, clock_time_t interval)
 
 void etimer_reset(struct etimer *et)
 {
-    ztimer_remove(ZTIMER_USEC, &et->super);
     _etimer_set(et, et->timer.interval);
 }
 
 void etimer_reset_with_new_interval(struct etimer *et, clock_time_t interval)
 {
-    ztimer_remove(ZTIMER_USEC, &et->super);
     etimer_set(et, interval);
 }
 
