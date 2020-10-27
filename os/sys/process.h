@@ -34,6 +34,7 @@ extern "C" {
 #define PT_YIELDED 1
 #define PT_EXITED  2
 #define PT_ENDED   3
+#define PT_UNKNOWN 4
 
 typedef unsigned char process_event_t;
 typedef void *process_data_t;
@@ -53,8 +54,14 @@ typedef void *process_data_t;
 
 #define PROCESS_MAX_EVENTS 32
 
+#define PROCESS_STATE_NONE 0
+#define PROCESS_STATE_RUNNING 1
+#define PROCESS_STATE_CALLED 2
+
 struct process
 {
+    struct process *next;
+    unsigned (*process_func)(struct process *, process_event_t, process_data_t);
     unsigned short lc;
     kernel_pid_t pid;
     event_queue_t event_queue;
@@ -64,6 +71,7 @@ struct process
     thread_t *thread;
     thread_handler_func_t thread_handler;
     void *instance;
+    unsigned char state;
 };
 
 typedef struct
@@ -76,15 +84,17 @@ typedef struct
 #define PROCESS(name, strname, size) \
     static char process_stack_##name[size]; \
     void *process_handler_##name(void *arg); \
+    unsigned process_func_##name(struct process *p, process_event_t ev, process_data_t data); \
     struct process name = {  \
+        .process_func = &process_func_##name, \
         .pid = KERNEL_PID_UNDEF, \
         .stack = process_stack_##name, \
         .stack_size = size, \
         .process_name = strname, \
         .thread_handler = process_handler_##name, \
-        .instance = NULL \
-    }; \
-    static unsigned process_func_##name(struct process *p, process_event_t ev, process_data_t data)
+        .instance = NULL, \
+        .state = PROCESS_STATE_NONE \
+    }
 
 #define PROCESS_NAME(name) extern struct process name
 
@@ -94,24 +104,36 @@ typedef struct
         struct process *p = &name; \
         p->thread = thread_get_from_scheduler(p->instance, p->pid); \
         event_queue_init(p->instance, &p->event_queue); \
-        process_current = p; \
-        unsigned state = process_func_##name(p, PROCESS_EVENT_INIT, (process_data_t *)arg); \
-        while (state != PT_ENDED) { \
-            if (state == PT_WAITING || state == PT_YIELDED) { \
+        unsigned ret = process_call(p, PROCESS_EVENT_INIT, (process_data_t *)arg); \
+        while (1) { \
+            if (ret == PT_WAITING || ret == PT_YIELDED) { \
                 custom_event_t *event = (custom_event_t *)event_wait(&p->event_queue); \
-                process_current = p; \
-                state = process_func_##name(p, event->id, event->data); \
-                event_release((event_t *)event); \
+                if (event->id == PROCESS_EVENT_EXITED) { \
+                    event_release((event_t *)event); \
+                    break; \
+                } else { \
+                    ret = process_call(p, event->id, event->data); \
+                    event_release((event_t *)event); \
+                } \
+            } else { \
+                vcassert(ret == PT_ENDED || ret == PT_EXITED); \
+                break; \
             } \
         } \
-        process_current = NULL; \
+        p->pid = KERNEL_PID_UNDEF; \
         thread_exit(p->instance); \
         return NULL; \
     } \
-    static unsigned process_func_##name(struct process *p, process_event_t ev, process_data_t data)
+    unsigned process_func_##name(struct process *p, process_event_t ev, process_data_t data)
 
 #define PROCESS_BEGIN() \
     { char PT_YIELD_FLAG = 1; if (PT_YIELD_FLAG) { (void)data; } switch(p->lc) { case 0:
+
+#define PROCESS_EXIT() \
+    do { \
+        pt->lc = 0; \
+        return PT_EXITED; \
+    } while (0)
 
 #define PROCESS_YIELD() \
     do { \
@@ -154,6 +176,12 @@ int process_post(struct process *p, process_event_t event, process_data_t data);
 void process_post_synch(struct process *p, process_event_t event, process_data_t data);
 
 process_event_t process_alloc_event(void);
+
+int process_is_running(struct process *p);
+
+unsigned process_call(struct process *p, process_event_t ev, process_data_t data);
+
+void process_exit(struct process *p);
 
 extern void *process_instance;
 extern struct process *process_current;
