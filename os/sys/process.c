@@ -219,3 +219,8 @@ unsigned process_call(struct process *p, process_event_t ev, process_data_t data
 
     return ret;
 }
+
+void process_exit(struct process *p)
+{
+    exit_process(p, PROCESS_CURRENT());
+}
