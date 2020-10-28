@@ -49,8 +49,8 @@ typedef void *process_data_t;
 #define PROCESS_EVENT_EXITED 7
 #define PROCESS_EVENT_TIMER 8
 #define PROCESS_EVENT_COM 9
-
-#define PROCESS_EVENT_LAST 10
+#define PROCESS_EVENT_THREAD_EXIT 10
+#define PROCESS_EVENT_LAST 11
 
 #define PROCESS_MAX_EVENTS 32
 
@@ -108,7 +108,7 @@ typedef struct
         while (1) { \
             if (ret == PT_WAITING || ret == PT_YIELDED) { \
                 custom_event_t *event = (custom_event_t *)event_wait(&p->event_queue); \
-                if (event->id == PROCESS_EVENT_EXITED) { \
+                if (event->id == PROCESS_EVENT_THREAD_EXIT) { \
                     event_release((event_t *)event); \
                     break; \
                 } else { \
@@ -131,7 +131,7 @@ typedef struct
 
 #define PROCESS_EXIT() \
     do { \
-        pt->lc = 0; \
+        p->lc = 0; \
         return PT_EXITED; \
     } while (0)
 
@@ -167,6 +167,12 @@ typedef struct
 
 #define PROCESS_CONTEXT_END(p) process_current = tmp_current; }
 
+/* TODO: PROCESS_PAUSE(): this macro yields the current running process for
+ * a short while, thus letting other processes run before the process continues. */
+#define PROCESS_PAUSE() \
+    do { \
+    } while (0)
+
 void process_init(void *instance);
 
 void process_start(struct process *p, process_data_t data);
@@ -182,6 +188,8 @@ int process_is_running(struct process *p);
 unsigned process_call(struct process *p, process_event_t ev, process_data_t data);
 
 void process_exit(struct process *p);
+
+void process_poll(struct process *p);
 
 extern void *process_instance;
 extern struct process *process_current;

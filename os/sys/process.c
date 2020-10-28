@@ -114,9 +114,11 @@ void process_post_synch(struct process *p, process_event_t event, process_data_t
 
     unsigned ret = process_call(p, event, data);
 
-    /* Note: don't exit process using process post synch */
-
-    vcassert(ret != PT_EXITED && ret != PT_ENDED);
+    if (ret == PT_EXITED || ret == PT_ENDED)
+    {
+        /* post PROCESS_EVENT_THREAD_EXIT to make vcrtos kernel exit this thread */
+        process_post(p, PROCESS_EVENT_THREAD_EXIT, NULL);
+    }
 
     process_current = caller;
 }
@@ -166,8 +168,8 @@ static void exit_process(struct process *p, struct process *fromprocess)
             process_current = p;
             p->process_func(p, PROCESS_EVENT_EXIT, NULL);
 
-            /* post the exited event to make vcrtos thread to exit */
-            process_post(p, PROCESS_EVENT_EXITED, NULL);
+            /* post PROCESS_EVENT_THREAD_EXIT to make vcrtos kernel exit this thread */
+            process_post(p, PROCESS_EVENT_THREAD_EXIT, NULL);
         }
     }
 
@@ -223,4 +225,9 @@ unsigned process_call(struct process *p, process_event_t ev, process_data_t data
 void process_exit(struct process *p)
 {
     exit_process(p, PROCESS_CURRENT());
+}
+
+void process_poll(struct process *p)
+{
+    process_post(p, PROCESS_EVENT_POLL, NULL);
 }
