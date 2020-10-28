@@ -167,10 +167,11 @@ typedef struct
 
 #define PROCESS_CONTEXT_END(p) process_current = tmp_current; }
 
-/* TODO: PROCESS_PAUSE(): this macro yields the current running process for
- * a short while, thus letting other processes run before the process continues. */
+/* PROCESS_PAUSE() macro yields the current running process for a short while,
+ * thus letting other processes run before the process continues. */
 #define PROCESS_PAUSE() \
     do { \
+        ztimer_sleep(ZTIMER_USEC, 1000); \
     } while (0)
 
 void process_init(void *instance);
