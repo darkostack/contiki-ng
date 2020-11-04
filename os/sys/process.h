@@ -30,10 +30,13 @@ extern "C" {
 
 #define PROCESS_NONE NULL
 
+#define PROCESS_ERR_OK 0
+#define PROCESS_ERR_FULL 1
+
 #define PT_WAITING 0
 #define PT_YIELDED 1
-#define PT_EXITED  2
-#define PT_ENDED   3
+#define PT_EXITED 2
+#define PT_ENDED 3
 #define PT_UNKNOWN 4
 
 typedef unsigned char process_event_t;
@@ -57,6 +60,7 @@ typedef void *process_data_t;
 #define PROCESS_STATE_NONE 0
 #define PROCESS_STATE_RUNNING 1
 #define PROCESS_STATE_CALLED 2
+#define PROCESS_STATE_PAUSED 3
 
 struct process
 {
@@ -70,6 +74,7 @@ struct process
     const char *process_name;
     thread_t *thread;
     thread_handler_func_t thread_handler;
+    mutex_t mutex;
     void *instance;
     unsigned char state;
 };
@@ -104,6 +109,8 @@ typedef struct
         struct process *p = &name; \
         p->thread = thread_get_from_scheduler(p->instance, p->pid); \
         event_queue_init(p->instance, &p->event_queue); \
+        mutex_init(p->instance, &p->mutex); \
+        p->mutex.queue.next = MUTEX_LOCKED; \
         unsigned ret = process_call(p, PROCESS_EVENT_INIT, (process_data_t *)arg); \
         while (1) { \
             if (ret == PT_WAITING || ret == PT_YIELDED) { \
@@ -171,12 +178,18 @@ typedef struct
  * thus letting other processes run before the process continues. */
 #define PROCESS_PAUSE() \
     do { \
-        ztimer_sleep(ZTIMER_USEC, 1000); \
+        unsigned char tmp_state = p->state; \
+        p->state = PROCESS_STATE_PAUSED; \
+        mutex_lock(&p->mutex); \
+        p->state = tmp_state; \
+        ev = PROCESS_EVENT_CONTINUE; \
     } while (0)
 
 void process_init(void *instance);
 
 void process_start(struct process *p, process_data_t data);
+
+void process_start_with_priority(struct process *p, process_data_t data, uint8_t priority);
 
 int process_post(struct process *p, process_event_t event, process_data_t data);
 
@@ -191,6 +204,8 @@ unsigned process_call(struct process *p, process_event_t ev, process_data_t data
 void process_exit(struct process *p);
 
 void process_poll(struct process *p);
+
+void process_paused_continue(void);
 
 extern void *process_instance;
 extern struct process *process_current;

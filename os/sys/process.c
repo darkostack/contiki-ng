@@ -45,7 +45,7 @@ void process_init(void *instance)
     cpu_irq_restore(state);
 }
 
-void process_start(struct process *p, process_data_t data)
+static void _process_start(struct process *p, process_data_t data, uint8_t priority)
 {
     vcassert(p != NULL && process_instance != NULL);
 
@@ -73,14 +73,29 @@ void process_start(struct process *p, process_data_t data)
     p->state = PROCESS_STATE_RUNNING;
     p->lc = 0;
 
-    p->pid = thread_create(p->instance, p->stack, p->stack_size, KERNEL_THREAD_PRIORITY_MAIN,
+    p->pid = thread_create(p->instance, p->stack, p->stack_size, priority,
                            THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
                            p->thread_handler, (void *)data, p->process_name);
+}
+
+void process_start(struct process *p, process_data_t data)
+{
+    _process_start(p, data, KERNEL_THREAD_PRIORITY_MAIN);
+}
+
+void process_start_with_priority(struct process *p, process_data_t data, uint8_t priority)
+{
+    _process_start(p, data, priority);
 }
 
 int process_post(struct process *p, process_event_t event, process_data_t data)
 {
     vcassert((p != NULL) && (p->pid != KERNEL_PID_UNDEF) && (process_instance != NULL));
+
+    if (p->thread == NULL)
+    {
+        return -1; /* thread is not ready to receive the event */
+    }
 
     custom_event_t *ev = NULL;
 
@@ -229,5 +244,35 @@ void process_exit(struct process *p)
 
 void process_poll(struct process *p)
 {
-    process_post(p, PROCESS_EVENT_POLL, NULL);
+    if (event_pending(&p->event_queue))
+    {
+        custom_event_t *event = (custom_event_t *)event_peek(&p->event_queue);
+
+        if (event->id != PROCESS_EVENT_POLL)
+        {
+            process_post(p, PROCESS_EVENT_POLL, NULL);
+        }
+        else
+        {
+            return;
+        }
+    }
+    else
+    {
+        process_post(p, PROCESS_EVENT_POLL, NULL);
+    }
+}
+
+void process_paused_continue(void)
+{
+    struct process *p = NULL;
+
+    for (p = process_list; p != NULL; p = p->next)
+    {
+        if (p->state == PROCESS_STATE_PAUSED)
+        {
+            mutex_unlock(&p->mutex);
+            break;
+        }
+    }
 }
